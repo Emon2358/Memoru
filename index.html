@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real-time Article Display</title>
+    <style>
+      /* スタイルは適宜変更してください */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f8f9fa; /* ページ全体の背景色を設定 */
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #fff; /* コンテナの背景色を設定 */
+      }
+
+      .article {
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+        padding: 10px;
+        cursor: pointer;
+      }
+
+      .article h2 {
+        margin: 0;
+        padding: 10px;
+        background-color: #f0f0f0;
+        border-bottom: 1px solid #ccc;
+      }
+
+      .article p {
+        display: none;
+        padding: 10px;
+      }
+
+      .article p.show {
+        display: block;
+      }
+
+      .form-container {
+        margin-bottom: 20px;
+        background-color: #fff; /* フォームコンテナの背景色を設定 */
+      }
+
+      .form-container label {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      .form-container input[type="text"],
+      .form-container textarea {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f8f9fa; /* 入力欄の背景色を設定 */
+      }
+
+      .form-container button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .form-container button:hover {
+        background-color: #0056b3;
+      }
+
+      .reset-btn {
+        background-color: #dc3545;
+      }
+
+      .reset-btn:hover {
+        background-color: #c82333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Real-time Article Display</h1>
+      <div id="articles"></div>
+
+      <!-- 記事追加フォーム -->
+      <div class="form-container">
+        <h2>新しい記事を追加</h2>
+        <form id="articleForm">
+          <label for="title">タイトル:</label>
+          <input type="text" id="title" name="title" required />
+          <label for="content">内容:</label>
+          <textarea id="content" name="content" required></textarea>
+          <button type="submit">投稿する</button>
+        </form>
+      </div>
+
+      <!-- 記事リセットフォーム -->
+      <div class="form-container">
+        <button type="button" class="reset-btn" onclick="resetArticles()">
+          記事をリセットする
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // ローカルストレージから記事データを取得する関数
+      function getArticlesFromLocalStorage() {
+        const storedArticles = localStorage.getItem("articles");
+        return storedArticles ? JSON.parse(storedArticles) : [];
+      }
+
+      // 記事データをローカルストレージに保存する関数
+      function saveArticlesToLocalStorage(articles) {
+        localStorage.setItem("articles", JSON.stringify(articles));
+      }
+
+      // 記事を表示する関数
+      function displayArticles() {
+        const articlesContainer = document.getElementById("articles");
+        articlesContainer.innerHTML = ""; // コンテナをクリア
+
+        const articles = getArticlesFromLocalStorage();
+        articles.forEach((article, index) => {
+          const articleElement = document.createElement("div");
+          articleElement.classList.add("article");
+          articleElement.innerHTML = `
+          <h2 data-index="${index}">${article.title}</h2>
+          <p class="content">${article.content}</p>
+      `;
+          articlesContainer.appendChild(articleElement);
+        });
+      }
+
+      // 初期表示
+      displayArticles();
+
+      // 記事追加フォームの送信イベントハンドラ
+      document
+        .getElementById("articleForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault(); // デフォルトの送信動作をキャンセル
+
+          // 入力値を取得して新しい記事を追加
+          const titleInput = document.getElementById("title");
+          const contentInput = document.getElementById("content");
+
+          const newArticle = {
+            title: titleInput.value,
+            content: contentInput.value,
+          };
+
+          const articles = getArticlesFromLocalStorage();
+          articles.push(newArticle); // articles配列に追加
+          saveArticlesToLocalStorage(articles); // ローカルストレージに保存
+          displayArticles(); // 記事を再表示
+
+          // 入力フォームをクリア
+          titleInput.value = "";
+          contentInput.value = "";
+        });
+
+      // 記事リセット関数
+      function resetArticles() {
+        localStorage.removeItem("articles"); // ローカルストレージから記事データを削除
+        displayArticles(); // 記事を再表示
+      }
+
+      // 題名をクリックしたときのイベントハンドラ
+      document
+        .getElementById("articles")
+        .addEventListener("click", function (event) {
+          if (event.target.tagName === "H2") {
+            const content = event.target.nextElementSibling;
+            content.classList.toggle("show");
+          }
+        });
+    </script>
+  </body>
+</html>
